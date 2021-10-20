@@ -1,4 +1,4 @@
-interface LibGenBookResult {
+export interface LibGenBookResult {
   id: number;
   title: string;
   md5: string;

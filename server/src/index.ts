@@ -3,6 +3,7 @@ import config from "config";
 import log from "./logger";
 import routes from "./routes/routes";
 import cors from "cors";
+import { search, SearchOptions } from "./libgen/search";
 
 import { Express, Request, Response } from "express";
 
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get("/", async (req: Request, res: Response): Promise<Response> => {
+  search("capital and ideology", SearchOptions.Title);
   return res.status(200).send({
     message: "Hello World! But Modified",
   });
