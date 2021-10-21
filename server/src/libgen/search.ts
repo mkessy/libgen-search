@@ -21,13 +21,14 @@ export const search = async (searchString: string, searchBy: SearchOptions) => {
     if (axiosResponse.status !== 200) {
       throw new Error(`Error fetching data from ${searchUrl}`);
     }
-    return processLibGenRawHTML(axiosResponse.data);
+    const bookIds = extractLibGenIds(axiosResponse.data);
+    return await fetchLibGenBookData(bookIds);
   } catch (error) {
     log.error(`${(error as Error).name}: ${(error as Error).message}`);
   }
 };
 
-const processLibGenRawHTML = (rawHtmlString: string) => {
+const extractLibGenIds = (rawHtmlString: string): string[] => {
   const $ = cheerio.load(rawHtmlString);
   log.info("parsed html");
   const libgenIds: string[] = [];
@@ -36,4 +37,22 @@ const processLibGenRawHTML = (rawHtmlString: string) => {
   });
 
   return libgenIds;
+};
+
+const fetchLibGenBookData = async (bookIds: string[]) => {
+  const searchFields = Object.values(config.get("libgen.searchFields"));
+  //TO-DO: replace with function to fetch fastest mirror
+  const baseUrl = config.get("libgen.mirrors.default");
+  const searchUrl = `${baseUrl}/json.php?ids=${bookIds.join(
+    ","
+  )}&fields=${searchFields.join(",")}`;
+  log.info(`Fetching Book Data from URL ${searchUrl}`);
+
+  const axiosResponse: AxiosResponse = await axios.get<JSON>(searchUrl, {
+    timeout: 3000,
+  });
+  if (axiosResponse.status !== 200) {
+    throw new Error(`Error fetching data from ${searchUrl}`);
+  }
+  return axiosResponse.data;
 };
