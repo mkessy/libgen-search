@@ -3,7 +3,7 @@ export default {
   host: "localhost",
   libgen: {
     mirrors: {
-      default: "https://libgen.is",
+      default: "https://libgen.fun/",
     },
   },
 };
