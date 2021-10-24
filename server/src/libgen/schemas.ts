@@ -1,5 +1,5 @@
 import { object, SchemaOf, number, string, array, InferType } from "yup";
-
+import config from "config";
 /* const libgenBookDataSchema = yup.object().shape({
   id: yup.number().positive().integer().defined(),
   title: yup.string().required(),
@@ -29,6 +29,9 @@ export const LibGenSearchQuerySchema = object({
   fields: array().of(string().defined()).defined(),
 }).defined();
 //search query schema recieved as get request to /search endpoint
-export const SearchQuerySchema = object({
-  queryString: string().defined(),
+export const SearchParamsSchema = object({
+  searchTerm: string().defined().min(5).max(100),
+  column: string()
+    .oneOf(Object.values(config.get("libgen.searchColumns")))
+    .default("title"),
 }).defined();

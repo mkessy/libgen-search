@@ -13,5 +13,9 @@ export default {
       identifier: "identifier",
       filesize: "filesize",
     },
+    searchColumns: {
+      title: "title",
+      identifier: "identifier",
+    },
   },
 };

@@ -3,17 +3,24 @@ import axios, { AxiosResponse } from "axios";
 import cheerio from "cheerio";
 import log from "../logger";
 import { LibGenBookResult } from "../types";
-import { toInteger } from "lodash";
+import { get, toInteger } from "lodash";
+import { Request, Response, NextFunction } from "express";
 
 export enum SearchOptions {
   Identifier = "identifier",
   Title = "title",
 }
 
-export const search = async (searchString: string, searchBy: SearchOptions) => {
+export const search = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   //TO-DO: add smart mirror selection to automatically select a good mirror
+  const searchString = get(req.params, "searchTerm");
+  const searchColumn = get(req.params, "column");
   const baseUrl = config.get("libgen.mirrors.default") as string;
-  const searchUrl = `${baseUrl}search.php?req=${searchString}&column=${searchBy}`;
+  const searchUrl = `${baseUrl}search.php?req=${searchString}&column=${searchColumn}`;
   log.info(`Searching: ${searchUrl}`);
   try {
     const axiosResponse = await axios.get<string>(searchUrl, { timeout: 3000 });
@@ -22,8 +29,9 @@ export const search = async (searchString: string, searchBy: SearchOptions) => {
       throw new Error(`Error fetching data from ${searchUrl}`);
     }
     const bookIds = extractLibGenBookIds(axiosResponse.data);
-    return await fetchLibGenBookData(bookIds);
+    const books = await fetchLibGenBookData(bookIds);
   } catch (error) {
+    res.sendStatus(503);
     log.error(`${(error as Error).name}: ${(error as Error).message}`);
   }
 };
@@ -34,8 +42,8 @@ const extractLibGenBookIds = (rawHtmlString: string): string[] => {
   const $ = cheerio.load(rawHtmlString);
   log.info("parsed html");
   const libgenIds: string[] = [];
-  //skip first child since first tr is the table header
   $("td:first-child", "table.c > tbody").each((i, e) => {
+    //skip first child since first tr is the table header
     if (i !== 0) {
       libgenIds.push($(e).text());
     }
