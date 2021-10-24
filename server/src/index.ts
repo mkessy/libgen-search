@@ -3,7 +3,7 @@ import config from "config";
 import log from "./logger";
 import routes from "./routes/routes";
 import cors from "cors";
-import { search, SearchOptions } from "./libgen/search";
+import { search, SearchOptions } from "./middleware/search";
 
 import { Express, Request, Response } from "express";
 
@@ -12,15 +12,9 @@ const host = config.get("host") as string;
 
 const app: Express = express();
 // Body parsing Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+//app.use(express.json());
+//app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
-app.get("/", async (req: Request, res: Response): Promise<Response> => {
-  const data = await search("poop", SearchOptions.Title);
-
-  return res.status(200).send({ data: data });
-});
 
 routes(app);
 
