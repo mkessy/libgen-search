@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get("/", async (req: Request, res: Response): Promise<Response> => {
-  const data = await search("capital/and/ideology", SearchOptions.Title);
+  const data = await search("poop", SearchOptions.Title);
 
   return res.status(200).send({ data: data });
 });

@@ -13,7 +13,7 @@ export enum SearchOptions {
 export const search = async (searchString: string, searchBy: SearchOptions) => {
   //TO-DO: add smart mirror selection to automatically select a good mirror
   const baseUrl = config.get("libgen.mirrors.default") as string;
-  const searchUrl = `${baseUrl}/search.php?req=${searchString}&column=${searchBy}`;
+  const searchUrl = `${baseUrl}search.php?req=${searchString}&column=${searchBy}`;
   log.info(`Searching: ${searchUrl}`);
   try {
     const axiosResponse = await axios.get<string>(searchUrl, { timeout: 3000 });
@@ -28,12 +28,17 @@ export const search = async (searchString: string, searchBy: SearchOptions) => {
   }
 };
 
+//need to add structure to allow for easy addition of scraper logic for differnt domains
+
 const extractLibGenBookIds = (rawHtmlString: string): string[] => {
   const $ = cheerio.load(rawHtmlString);
   log.info("parsed html");
   const libgenIds: string[] = [];
-  $("td[nowrap]:first-child").each((i, e) => {
-    libgenIds.push($(e).text());
+  //skip first child since first tr is the table header
+  $("td:first-child", "table.c > tbody").each((i, e) => {
+    if (i !== 0) {
+      libgenIds.push($(e).text());
+    }
   });
 
   return libgenIds;
@@ -43,7 +48,7 @@ const fetchLibGenBookData = async (bookIds: string[]) => {
   const searchFields = Object.values(config.get("libgen.searchFields"));
   //TO-DO: replace with function to fetch fastest mirror
   const baseUrl = config.get("libgen.mirrors.default");
-  const searchUrl = `${baseUrl}/json.php?ids=${bookIds.join(
+  const searchUrl = `${baseUrl}json.php?ids=${bookIds.join(
     ","
   )}&fields=${searchFields.join(",")}`;
   log.info(`Fetching Book Data from URL ${searchUrl}`);

@@ -14,10 +14,20 @@ export const LibGenBookResultSchema = object({
   id: number().integer().defined(),
   title: string().defined(),
   md5: string().defined(),
-  identifier: array().of(string().defined()).defined(),
+  identifier: array()
+    .of(string().defined())
+    .defined()
+    .transform((curVal, _prevVal) => {
+      if (!curVal) return [];
+      return curVal.split(",");
+    }),
   filesize: number().positive().integer().defined(),
 }).defined();
 
+export const LibGenSearchQuerySchema = object({
+  bookIds: array().of(number().integer().defined()).defined(),
+  fields: array().of(string().defined()).defined(),
+}).defined();
 //search query schema recieved as get request to /search endpoint
 export const SearchQuerySchema = object({
   queryString: string().defined(),

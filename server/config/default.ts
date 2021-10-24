@@ -3,9 +3,10 @@ export default {
   host: "localhost",
   libgen: {
     mirrors: {
-      default: "https://libgen.fun/",
+      default: "https://libgen.is/",
     },
     searchFields: {
+      id: "id",
       title: "title",
       author: "author",
       md5: "md5",
