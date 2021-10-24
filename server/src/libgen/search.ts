@@ -21,14 +21,14 @@ export const search = async (searchString: string, searchBy: SearchOptions) => {
     if (axiosResponse.status !== 200) {
       throw new Error(`Error fetching data from ${searchUrl}`);
     }
-    const bookIds = extractLibGenIds(axiosResponse.data);
+    const bookIds = extractLibGenBookIds(axiosResponse.data);
     return await fetchLibGenBookData(bookIds);
   } catch (error) {
     log.error(`${(error as Error).name}: ${(error as Error).message}`);
   }
 };
 
-const extractLibGenIds = (rawHtmlString: string): string[] => {
+const extractLibGenBookIds = (rawHtmlString: string): string[] => {
   const $ = cheerio.load(rawHtmlString);
   log.info("parsed html");
   const libgenIds: string[] = [];
@@ -48,7 +48,7 @@ const fetchLibGenBookData = async (bookIds: string[]) => {
   )}&fields=${searchFields.join(",")}`;
   log.info(`Fetching Book Data from URL ${searchUrl}`);
 
-  const axiosResponse: AxiosResponse = await axios.get<JSON>(searchUrl, {
+  const axiosResponse: AxiosResponse = await axios.get(searchUrl, {
     timeout: 3000,
   });
   if (axiosResponse.status !== 200) {
