@@ -11,18 +11,31 @@ import config from "config";
 
 //result schema sent as response to search query
 export const LibGenBookResultSchema = object({
-  id: number().integer().defined(),
+  id: number()
+    .integer()
+    .defined()
+    .transform((id) => parseInt(id)),
   title: string().defined(),
   md5: string().defined(),
   identifier: array()
     .of(string().defined())
     .defined()
-    .transform((curVal, _prevVal) => {
-      if (!curVal) return [];
-      return curVal.split(",");
+    .default([])
+    .transform((currentValue, originalValue) => {
+      if (!originalValue) return undefined;
+      return originalValue.split(",");
     }),
-  filesize: number().positive().integer().defined(),
+  filesize: number()
+    .positive()
+    .integer()
+    .defined()
+    .transform((fileSize) => parseInt(fileSize)),
 }).defined();
+
+export const ResponseSchema = object({
+  count: number().integer().defined().default(0),
+  results: array().of(LibGenBookResultSchema).defined(),
+});
 
 export const LibGenSearchQuerySchema = object({
   bookIds: array().of(number().integer().defined()).defined(),
@@ -30,8 +43,9 @@ export const LibGenSearchQuerySchema = object({
 }).defined();
 //search query schema recieved as get request to /search endpoint
 export const SearchParamsSchema = object({
-  searchTerm: string().defined().min(5).max(100),
+  searchTerm: string().defined().min(2).max(100),
   column: string()
     .oneOf(Object.values(config.get("libgen.searchColumns")))
-    .default("title"),
+    .default("title")
+    .defined(),
 }).defined();

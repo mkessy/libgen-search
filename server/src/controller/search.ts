@@ -2,9 +2,10 @@ import config from "config";
 import axios, { AxiosResponse } from "axios";
 import cheerio from "cheerio";
 import log from "../logger";
-import { LibGenBookResult } from "../types";
+import { LibGenBookResult, ResponseObjectType } from "../types";
 import { get, toInteger } from "lodash";
 import { Request, Response, NextFunction } from "express";
+import { ResponseSchema } from "../libgen/schemas";
 
 export enum SearchOptions {
   Identifier = "identifier",
@@ -24,15 +25,30 @@ export const search = async (
   log.info(`Searching: ${searchUrl}`);
   try {
     const axiosResponse = await axios.get<string>(searchUrl, { timeout: 3000 });
-    log.info("status", axiosResponse.status);
+    log.info(`status: ${axiosResponse.status}`);
     if (axiosResponse.status !== 200) {
       throw new Error(`Error fetching data from ${searchUrl}`);
     }
     const bookIds = extractLibGenBookIds(axiosResponse.data);
+    //if no results found for search this is still a valid result
+    if (bookIds.length === 0) {
+      return res.status(200).send(
+        ResponseSchema.validateSync({
+          count: bookIds.length,
+          results: [],
+        })
+      );
+    }
+
     const books = await fetchLibGenBookData(bookIds);
+    const responseObj = ResponseSchema.validateSync({
+      count: books.length,
+      results: books,
+    });
+    return res.status(200).send(responseObj);
   } catch (error) {
-    res.sendStatus(503);
-    log.error(`${(error as Error).name}: ${(error as Error).message}`);
+    log.error(error);
+    return res.sendStatus(503);
   }
 };
 
@@ -52,7 +68,7 @@ const extractLibGenBookIds = (rawHtmlString: string): string[] => {
   return libgenIds;
 };
 
-const fetchLibGenBookData = async (bookIds: string[]) => {
+const fetchLibGenBookData = async (bookIds: string[]): Promise<[any]> => {
   const searchFields = Object.values(config.get("libgen.searchFields"));
   //TO-DO: replace with function to fetch fastest mirror
   const baseUrl = config.get("libgen.mirrors.default");
@@ -61,7 +77,7 @@ const fetchLibGenBookData = async (bookIds: string[]) => {
   )}&fields=${searchFields.join(",")}`;
   log.info(`Fetching Book Data from URL ${searchUrl}`);
 
-  const axiosResponse: AxiosResponse = await axios.get(searchUrl, {
+  const axiosResponse = await axios.get<[any]>(searchUrl, {
     timeout: 3000,
   });
   if (axiosResponse.status !== 200) {
