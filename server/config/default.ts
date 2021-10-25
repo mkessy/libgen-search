@@ -4,6 +4,7 @@ export default {
   libgen: {
     mirrors: {
       default: "https://libgen.is/",
+      mirror1: "",
     },
     searchFields: {
       id: "id",
