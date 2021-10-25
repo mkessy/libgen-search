@@ -1,4 +1,4 @@
-import { object, SchemaOf, number, string, array, InferType } from "yup";
+import { object, number, string, array } from "yup";
 import config from "config";
 /* const libgenBookDataSchema = yup.object().shape({
   id: yup.number().positive().integer().defined(),

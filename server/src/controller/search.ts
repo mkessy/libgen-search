@@ -1,10 +1,9 @@
 import config from "config";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import cheerio from "cheerio";
 import log from "../logger";
-import { LibGenBookResult, ResponseObjectType } from "../types";
-import { get, toInteger } from "lodash";
-import { Request, Response, NextFunction } from "express";
+import { get } from "lodash";
+import { Request, Response } from "express";
 import { ResponseSchema } from "../libgen/schemas";
 
 export enum SearchOptions {
@@ -12,11 +11,7 @@ export enum SearchOptions {
   Title = "title",
 }
 
-export const search = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const search = async (req: Request, res: Response) => {
   //TO-DO: add smart mirror selection to automatically select a good mirror
   const searchString = get(req.params, "searchTerm");
   const searchColumn = get(req.params, "column");
